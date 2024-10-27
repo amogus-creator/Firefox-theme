@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! /usr/bin/env bash
 
 set -Eeo pipefail
 
@@ -8,40 +8,28 @@ MY_HOME=$(getent passwd "${MY_USERNAME}" | cut -d: -f6)
 
 THEME_NAME="WhiteSur"
 SRC_DIR="${REPO_DIR}/src"
+
+# Firefox
+FIREFOX_DIR_HOME="${MY_HOME}/.mozilla/firefox"
 FIREFOX_THEME_DIR="${MY_HOME}/.mozilla/firefox/firefox-themes"
 
-# Загрузка и установка темы
-download_and_install_theme() {
-  echo "Загрузка темы ${THEME_NAME}..."
-  git clone --depth 1 https://github.com/vinceliuice/WhiteSur-firefox-theme.git "${SRC_DIR}/${THEME_NAME}"
+# Создание каталогов
+mkdir -p "${FIREFOX_THEME_DIR}"
 
-  install_firefox_theme "${FIREFOX_THEME_DIR}"
+# Установка темы
+install_firefox_theme() {
+  local target="${FIREFOX_THEME_DIR}"
+
+  echo "Установка темы '${THEME_NAME}' для Firefox..."
+
+  mkdir -p "${target}"
+  cp -rf "${SRC_DIR}/${THEME_NAME}" "${target}"
+  cp -rf "${SRC_DIR}/customChrome.css" "${target}"
+  cp -rf "${SRC_DIR}/userChrome-${THEME_NAME}.css" "${target}/userChrome.css"
+  cp -rf "${SRC_DIR}/userContent-${THEME_NAME}.css" "${target}/userContent.css"
+
   echo "Тема '${THEME_NAME}' успешно установлена."
 }
 
-install_firefox_theme() {
-  local target="${1}"
-  mkdir -p "${target}"
-  cp -rf "${SRC_DIR}/${THEME_NAME}" "${target}"
-  cp -rf "${SRC_DIR}/${THEME_NAME}/customChrome.css" "${target}"
-  cp -rf "${SRC_DIR}/${THEME_NAME}/userChrome-${THEME_NAME}.css" "${target}/userChrome.css"
-  cp -rf "${SRC_DIR}/${THEME_NAME}/userContent-${THEME_NAME}.css" "${target}/userContent.css"
-}
-
-remove_firefox_theme() {
-  rm -rf "${FIREFOX_THEME_DIR}/${THEME_NAME}"
-  [[ -f "${FIREFOX_THEME_DIR}/customChrome.css" ]] && rm -f "${FIREFOX_THEME_DIR}/customChrome.css"
-  [[ -f "${FIREFOX_THEME_DIR}/userChrome.css" ]] && rm -f "${FIREFOX_THEME_DIR}/userChrome.css"
-}
-
-# Создание директории для темы, если она не существует
-mkdir -p "${SRC_DIR}"
-
-# Установка темы по умолчанию
-download_and_install_theme
-
-# Если передан параметр для удаления
-if [[ "$1" == "-r" || "$1" == "--remove" ]]; then
-  remove_firefox_theme
-  echo "Тема '${THEME_NAME}' успешно удалена."
-fi
+# Установка темы
+install_firefox_theme
